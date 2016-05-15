@@ -21,7 +21,7 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
 /* Callback for pitchbend */
 void handlePitchBend(byte channel, int bend)
 {
-    pwm_val = map(bend,0,127,0,16383);
+    pwm_val = map(bend,0,8191,0,255);
     analogWrite(3,pwm_val);
 }
 
