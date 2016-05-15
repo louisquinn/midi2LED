@@ -15,7 +15,7 @@ int status;
 
 void setup()
 {
-  Serial.begin(31250);
+  Serial.begin(115200);
   pinMode(3,OUTPUT);
   pinMode(13,OUTPUT);
 
@@ -26,6 +26,7 @@ void setup()
 void loop()
 {
   status = midi_read();
+  delay(50);
 }
 
 /********** Functions **********/
@@ -33,16 +34,16 @@ int midi_read()
 {
     do
     {
-        command_byte = Serial.read();
-        second_byte = Serial.read();
-        third_byte = Serial.read();
+        command_byte = Serial.read();   /* Command byte */
+        second_byte = Serial.read();    /* Note */
+        third_byte = Serial.read();     /* Velocity */
     
         if(command_byte == noteOn && third_byte > 0)
         {
             pwm_val = map(third_byte,0,127,0,255);
             analogWrite(3,pwm_val);
         }
-        if(command_byte == noteOff)
+        if(command_byte == noteOff || (command_byte == noteOn && third_byte == 0))
         {
             analogWrite(3,0);
         }
@@ -60,7 +61,7 @@ int midi_read()
             {
                 temp = analogRead(3);
                 temp2 = map(temp,0,1023,0,255);
-                if(temp > 150)
+                if(temp < 150)
                 {
                     for(int i = temp; i < 150; i++)
                     {
@@ -68,11 +69,13 @@ int midi_read()
                         delay(300);
                     }
                 }
-                for(int i = 150; i < 0; i-=5)
+                for(int i = 150; i > 0; i-=5)
                 {
-                    analogWrite(3,0);
-                    serial_flush();
+                    analogWrite(3,i);
+                    delay(150);
                 }
+                analogWrite(3,0);
+                serial_flush();
             }
         }
     }
